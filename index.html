@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>警告：想你过度</title>
+    <style>
+        /* === 基础设置 === */
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: #f0f2f5;
+            /* 弄一张稍微模糊的壁纸背景，更有桌面感 */
+            background-image: linear-gradient(120deg, #a1c4fd 0%, #c2e9fb 100%);
+            height: 100vh;
+            overflow: hidden;
+            font-family: "PingFang SC", "Microsoft YaHei", sans-serif;
+            user-select: none;
+        }
+
+        /* === 启动按钮 === */
+        #start-btn {
+            position: absolute;
+            top: 50%; left: 50%;
+            transform: translate(-50%, -50%);
+            padding: 15px 40px;
+            background: #9a73c4;
+            color: white;
+            border: none;
+            border-radius: 50px;
+            font-size: 1.2rem;
+            font-weight: bold;
+            box-shadow: 0 4px 15px rgba(255, 107, 129, 0.4);
+            cursor: pointer;
+            z-index: 9999;
+            transition: all 0.3s;
+            animation: pulse 1.5s infinite;
+        }
+
+        #start-btn:active {
+            transform: translate(-50%, -50%) scale(0.95);
+        }
+
+        /* === 模拟弹窗样式 === */
+        .window-popup {
+            position: absolute;
+            width: 220px; /* 宽度适中，适合手机 */
+            background: #fff;
+            border-radius: 8px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2), 0 2px 5px rgba(0,0,0,0.1);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            opacity: 0;
+            transform: scale(0.5);
+            animation: popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+            border: 1px solid rgba(0,0,0,0.1);
+        }
+
+        /* 标题栏 */
+        .window-header {
+            height: 28px;
+            display: flex;
+            align-items: center;
+            padding: 0 10px;
+            /* 默认灰色，会被JS动态上色 */
+            background: #eee; 
+            border-bottom: 1px solid rgba(0,0,0,0.05);
+        }
+
+        /* 标题文字 */
+        .window-title {
+            font-size: 12px;
+            color: rgba(0,0,0,0.6);
+            flex-grow: 1;
+            pointer-events: none;
+        }
+
+        /* 模拟关闭按钮 */
+        .window-close {
+            width: 12px;
+            height: 12px;
+            background: #918fec; /* Mac红 */
+            border-radius: 50%;
+            margin-right: 6px;
+            box-shadow: inset 0 0 2px rgba(0,0,0,0.2);
+        }
+
+        /* 内容区域 */
+        .window-body {
+            padding: 15px;
+            font-size: 15px;
+            color: #333;
+            font-weight: 500;
+            line-height: 1.5;
+            text-align: center;
+            background: rgba(255,255,255,0.9);
+        }
+
+        /* === 动画关键帧 === */
+        @keyframes popIn {
+            to { opacity: 1; transform: scale(1); }
+        }
+
+        @keyframes pulse {
+            0% { transform: translate(-50%, -50%) scale(1); }
+            50% { transform: translate(-50%, -50%) scale(1.05); }
+            100% { transform: translate(-50%, -50%) scale(1); }
+        }
+
+        /* 屏幕震动特效 */
+        .shake {
+            animation: shake 0.5s;
+        }
+
+        @keyframes shake {
+            0% { transform: translate(1px, 1px) rotate(0deg); }
+            10% { transform: translate(-1px, -2px) rotate(-1deg); }
+            20% { transform: translate(-3px, 0px) rotate(1deg); }
+            30% { transform: translate(3px, 2px) rotate(0deg); }
+            40% { transform: translate(1px, -1px) rotate(1deg); }
+            50% { transform: translate(-1px, 2px) rotate(-1deg); }
+            60% { transform: translate(-3px, 1px) rotate(0deg); }
+            70% { transform: translate(3px, 1px) rotate(-1deg); }
+            80% { transform: translate(-1px, -1px) rotate(1deg); }
+            90% { transform: translate(1px, 2px) rotate(0deg); }
+            100% { transform: translate(1px, -2px) rotate(-1deg); }
+        }
+
+    </style>
+</head>
+<body>
+
+    <button id="start-btn">你在干嘛，相吉弟弟</button>
+
+    <script>
+        // === 语录库  ===
+        const messages = [
+            "我想你啦", "今天过得开心嘛", "期待和你见面", 
+            "顺顺利利", "不要熬夜", "我喜欢你", 
+            "相机全世界最棒", "今天有多穿衣服吗", "乖乖吃饭",
+            "好想你呀", "弟弟贴贴", "你在干嘛呀",
+            "世界最棒最漂亮", "每天都要开心", "不许不开心",
+            "想见你", "好喜欢好喜欢你", "相吉弟弟",
+            "今天要早点睡", "梦里要有我", "抱抱",
+            "一定要照顾好自己", "想把最好的给你", "我们要一直在一起"
+        ];
+
+        // === 2. 马卡龙配色库 (用于标题栏) ===
+        const colors = [
+            "#FFB7B2", // 柔粉
+            "#FFDAC1", // 蜜桃
+            "#E2F0CB", // 浅绿
+            "#B5EAD7", // 薄荷
+            "#C7CEEA", // 雾霾蓝
+            "#ffe4e1", // 迷雾玫瑰
+            "#ff9a9e", // 落日粉
+            "#a18cd1"  // 梦幻紫
+        ];
+
+        const btn = document.getElementById('start-btn');
+        let intervalId = null;
+        let count = 0;
+        
+        // 音效 (可选，更像轰炸)
+        // const audio = new Audio('pop.mp3'); 
+
+        btn.addEventListener('click', () => {
+            btn.style.display = 'none'; // 隐藏按钮
+            document.body.classList.add('shake'); // 屏幕震一下
+            startBombing();
+        });
+
+        function startBombing() {
+            // 设置定时器，每 100毫秒 生成一个窗口 (速度可调)
+            intervalId = setInterval(() => {
+                createPopup();
+                count++;
+
+                // 随着数量增加，稍微减慢一点点防止浏览器崩溃，但还是很快
+                if (count > 50 && count % 20 === 0) {
+                   // 可以在这里加逻辑控制上限，但为了“占满屏幕”，我们不清除旧的
+                }
+            }, 40); 
+        }
+
+        function createPopup() {
+            // 1. 创建 DOM 结构
+            const div = document.createElement('div');
+            div.className = 'window-popup';
+            
+            // 随机颜色
+            const color = colors[Math.floor(Math.random() * colors.length)];
+            // 随机文字
+            const text = messages[Math.floor(Math.random() * messages.length)];
+
+            div.innerHTML = `
+                <div class="window-header" style="background: ${color}">
+                    <div class="window-close"></div>
+                    <div class="window-title">来自心底的消息...</div>
+                </div>
+                <div class="window-body">
+                    ${text}
+                </div>
+            `;
+
+            // 2. 随机位置计算
+            // 减去窗口的大致宽高，防止完全跑出屏幕
+            const maxW = window.innerWidth - 230; 
+            const maxH = window.innerHeight - 150;
+            
+            const randomX = Math.random() * maxW;
+            const randomY = Math.random() * maxH;
+
+            div.style.left = randomX + 'px';
+            div.style.top = randomY + 'px';
+            
+            // 随机层级，让它们互相覆盖
+            div.style.zIndex = Math.floor(Math.random() * 100);
+            
+            // 随机微小的旋转角度，看起来更自然凌乱
+            const rotate = (Math.random() - 0.5) * 10; 
+            div.style.transform = `scale(0.5) rotate(${rotate}deg)`;
+
+            document.body.appendChild(div);
+            
+            // 播放出现动画（CSS负责）
+            // 也可以加点击关闭功能
+            div.onclick = function() {
+                this.remove(); // 点击可以消除一个（解压）
+            }
+        }
+
+    </script>
+</body>
+</html>
